@@ -1,8 +1,6 @@
 package com.xodosan.local_chat.server;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 
 public class MonoThreadClientHandler implements Runnable {
@@ -14,24 +12,21 @@ public class MonoThreadClientHandler implements Runnable {
 
   @Override
   public void run() {
-    try (InputStream in = client.getInputStream();
-         OutputStream out = client.getOutputStream()) {
+      try (DataInputStream in = new DataInputStream(client.getInputStream());
+           DataOutputStream out = new DataOutputStream(client.getOutputStream())) {
 
+      while (!client.isClosed()) {
+        String entry = in.readUTF();
 
-      System.out.println("Server reading from channel");
-      String entry = new String(in.readAllBytes());
+        if (entry.split(" ")[1].equals("quit")) {
+          client.close();
+          System.out.println(entry.split(" ")[0] + "disconnected");
+          break;
+        }
 
-      System.out.println("READ from client message - " + entry);
-
-      out.flush();
-
-
-      System.out.println("Client disconnected");
-      System.out.println("Closing connections & channels.");
-
-      client.close();
-
-      System.out.println("Closing connections & channels - DONE.");
+        out.writeUTF(entry);
+        out.flush();
+      }
     } catch (IOException e) {
 
     }

@@ -2,9 +2,7 @@ package com.xodosan.local_chat.client;
 
 import com.xodosan.local_chat.constant.Constant;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -23,10 +21,13 @@ public class ChatClient {
         String line = scanner.nextLine();
         String resultLine = nickname + ':' + ' ' + line;
 
-        try (InputStream in = socket.getInputStream();
-             OutputStream out = socket.getOutputStream()) {
-          out.write(resultLine.getBytes());
+        try (DataInputStream in = new DataInputStream(socket.getInputStream());
+             DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
+          out.writeUTF(resultLine);
           out.flush();
+
+          String returnedEntry = in.readUTF();
+          System.out.println(returnedEntry);
         }
 
       } catch (IOException ex) {
